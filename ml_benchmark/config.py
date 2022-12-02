@@ -38,5 +38,5 @@ class MetricsStorageConfig:
     user = "root"
     password = "1234"
     db = "benchmark_metrics"
-    host = "localhost"
+    host = "host.docker.internal"  # Windows + Docker Desktop: host.docker.internal, Linux / Other: localhost
     connection_string = f"postgresql://{user}:{password}@{host}:{port}/{db}"

@@ -1,0 +1,23 @@
+
+workerCpu: 1
+workerMemory: 2
+workerCount: 4
+metricsIP:  auto ##urlopen("https://checkip.amazonaws.com").read().decode("utf-8").strip(),
+kubernetesMasterIP: ray://localhost:10001
+kubernetesContext: "kind-kind"
+deleteAfterRun: True
+hyperparameter:
+  learning_rate:
+    start: 1e-4
+    end: 1e-2
+    step_size: 1e-5
+  weight_decay:
+    start: 1e-6
+    end: 1e-4
+    step_size: 1e-5
+  hidden_layer_config:
+    start: [10]
+    end: [100, 100, 100]
+    step_size: [10, 1]
+trials: 10
+epochs: 100
