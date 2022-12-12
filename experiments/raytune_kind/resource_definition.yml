@@ -4,7 +4,7 @@ workerMemory: 2
 workerCount: 4
 metricsIP:  auto ##urlopen("https://checkip.amazonaws.com").read().decode("utf-8").strip(),
 kubernetesMasterIP: ray://localhost:10001
-kubernetesContext: "kind-kind"
+kubernetesContext: "isekube"
 deleteAfterRun: True
 hyperparameter:
   learning_rate:
