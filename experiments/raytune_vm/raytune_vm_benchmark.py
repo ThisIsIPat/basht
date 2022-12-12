@@ -69,7 +69,7 @@ class RaytuneKindBenchmark(Benchmark):
         Connect to the Ray cluster by calling ray.init
         """
         # Consider replacing master ip with localhost during test runs
-        ray.init(address="ray://{}:6379".format(self.master_ip),
+        ray.init(address="ray://{}:10001".format(self.master_ip),
                  _redis_password="5241590000000000",
                  runtime_env={
             "py_modules": [path.join(path.dirname(__file__), "../../ml_benchmark")],
