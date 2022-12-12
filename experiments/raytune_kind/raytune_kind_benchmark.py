@@ -17,7 +17,6 @@ from ml_benchmark.workload.mnist.mnist_task import MnistTask
 from ml_benchmark.utils.yaml import YMLHandler
 
 
-# TODO: Figure out a way to allow ml_benchmark in the worker nodes
 # TODO: Consider ray.put/ray.get before to store task objective
 def ray_objective(config):
     task = MnistTask(config_init={"epochs": config["epochs"]})
