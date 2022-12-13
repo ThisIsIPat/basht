@@ -304,7 +304,8 @@ if __name__ == "__main__":
     dir_path = os.path.abspath(os.path.dirname(__file__))
     resources = YMLHandler.load_yaml(os.path.join(dir_path, "resource_definition.yml"))
     to_automate = {
-        "metricsIP": urlopen("https://checkip.amazonaws.com").read().decode("utf-8").strip()
+        "metricsIP": urlopen("https://checkip.amazonaws.com").read().decode("utf-8").strip(),
+        # "prometheus_url": "http://localhost:30041"
     }
     resources.update(to_automate)
 
