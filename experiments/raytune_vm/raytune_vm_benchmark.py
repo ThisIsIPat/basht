@@ -3,9 +3,7 @@ from os import path
 
 import numpy
 import ray
-from kubernetes import config
 from ray import tune
-from ray.tune import TuneConfig
 
 from ml_benchmark.benchmark_runner import Benchmark
 from ml_benchmark.workload.mnist.mnist_task import MnistTask
@@ -43,14 +41,12 @@ class RaytuneKindBenchmark(Benchmark):
         Args:
             resources (dict): _description_
         """
-        config.load_kube_config(context=resources.get("kubernetesContext"))
         self.master_ip = resources.get("vmMasterIP")
         self.trial_tag = resources.get("dockerImageTag", "raytune-trial:latest")
         self.study_name = resources.get("studyName", "raytune-study")
         self.workerCpu = resources.get("workerCpu", 2)
         self.delete_after_run = resources.get("deleteAfterRun", True)
         self.metrics_ip = resources.get("metricsIP")
-        self.trials = resources.get("trials", 10)
         self.epochs = resources.get("epochs", 5)
         self.hyperparameter = resources.get("hyperparameter")
 
@@ -92,21 +88,19 @@ class RaytuneKindBenchmark(Benchmark):
             # Reduced from 100 steps to 10 each during testing. Later, make configurable
             # From simple raytune example
             "hyperparameters": {
-                "learning_rate": tune.choice(numpy.linspace(0.0001, 0.01, 10)),
-                "weight_decay": tune.choice(numpy.linspace(0.00001, 0.001, 10)),
+                "learning_rate": tune.grid_search(numpy.linspace(0.0001, 0.01, 10)),
+                "weight_decay": tune.grid_search(numpy.linspace(0.00001, 0.001, 10)),
                 "hidden_layer_config": tune.grid_search([[20], [10, 10]]),
             }
         }
 
         tuner = tune.Tuner(
             tune.with_resources(ray_objective, {
-                # TODO: Other resources too, like memory? Not necessary bc of ray_resources.yaml but more consistent
+                # Ensure that only one trial per node is running
                 "cpu": self.workerCpu
+                # Other resources will automatically use maximal resource provision, which is 4GB RAM for VMs
             }),
-            param_space=search_space,
-            tune_config=TuneConfig(
-                num_samples=self.trials, # TODO: Why 20 instead of 10?
-            )
+            param_space=search_space
         )
         self.results = tuner.fit()
 

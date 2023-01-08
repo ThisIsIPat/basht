@@ -42,7 +42,9 @@ class ResourceTracker:
         available = set(self.prm.all_metrics())
 
         #check node_exporter metrics - cpu/memory
-        required = {"node_memory_MemFree_bytes", "node_memory_MemTotal_bytes", "node_cpu_seconds_total","scaph_host_power_microwatts","scaph_process_power_consumption_microwatts"}
+        required = {"node_memory_MemFree_bytes", "node_memory_MemTotal_bytes", "node_cpu_seconds_total"
+            # ,"scaph_host_power_microwatts","scaph_process_power_consumption_microwatts" # Not requires in my thesis
+                    }
         if not required.issubset(available):
             raise ValueError("Prometheus does not provide the required metrics.")
 

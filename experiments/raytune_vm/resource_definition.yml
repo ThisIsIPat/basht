@@ -1,5 +1,5 @@
 
-workerCpu: 1
+workerCpu: 2
 metricsIP:  auto ##urlopen("https://checkip.amazonaws.com").read().decode("utf-8").strip(),
 vmMasterIP: localhost
 deleteAfterRun: True
@@ -16,5 +16,5 @@ hyperparameter:
     start: [10]
     end: [100, 100, 100]
     step_size: [10, 1]
-trials: 5
+trials: 200
 epochs: 50
