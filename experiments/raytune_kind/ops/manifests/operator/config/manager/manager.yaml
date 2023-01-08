@@ -20,6 +20,8 @@ spec:
         app.kubernetes.io/name: kuberay
         app.kubernetes.io/component: kuberay-operator
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: knode1
       securityContext:
         runAsNonRoot: true
       serviceAccountName: kuberay-operator

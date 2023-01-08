@@ -36,6 +36,8 @@ spec:
     #pod template
     template:
       spec:
+        nodeSelector:
+          kubernetes.io/hostname: knode1
         containers:
         # The Ray head pod
         - name: ray-head
@@ -59,6 +61,9 @@ spec:
             requests:
               cpu: "${RAY_HEAD_CPU}"
               memory: "${RAY_HEAD_MEMORY}"
+          env:
+          - name: METRICS_STORAGE_HOST
+            value: "192.168.195.148"
   workerGroupSpecs:
   # the pod replicas in this group typed worker
   - replicas: ${WORKER_REPLICAS}
@@ -86,7 +91,10 @@ spec:
         # annotations for pod
         annotations:
           key: value
+      # Deploy on Kubernetes node "knode1" (During specific ISE benchmark only!)
       spec:
+        nodeSelector:
+          kubernetes.io/hostname: knode1
         initContainers:
         # the env var $RAY_IP is set by the operator if missing, with the value of the head service name
         - name: init-myservice
@@ -108,3 +116,6 @@ spec:
             requests:
               cpu: "${RAY_WORKER_CPU}"
               memory: "${RAY_WORKER_MEMORY}"
+          env:
+          - name: METRICS_STORAGE_HOST
+            value: "192.168.195.148"

@@ -10,7 +10,6 @@ from kubernetes import client, config, watch
 from kubernetes.client import ApiException
 from kubernetes.utils import FailToCreateError
 from ray import tune
-from ray.tune import TuneConfig
 
 from ml_benchmark.benchmark_runner import Benchmark
 from ml_benchmark.workload.mnist.mnist_task import MnistTask
@@ -94,23 +93,25 @@ class RaytuneKindBenchmark(Benchmark):
         ray_template = YMLHandler.load_yaml(ray_cluster_kustomize_config_template_path)
         # Assuming that the worker CPU and memory are set to a value occupying a single node each,
         # the head should be set to the same value to ensure that the head has its own node.
+
+        # Slightly overprovision CPU. Ray puts the limit of 2 CPU explicitly anyways
         ray_template["spec"]["headGroupSpec"]["template"]["spec"]["containers"][0]["resources"] = {
             "requests": {
-                "cpu": self.workerCpu,
+                "cpu": f"{self.workerCpu}048m",
                 "memory": f"{self.workerMemory}Gi"
             },
             "limits": {
-                "cpu": self.workerCpu,
+                "cpu": f"{self.workerCpu}048m",
                 "memory": f"{self.workerMemory}Gi"
             }
         }
         ray_template["spec"]["workerGroupSpecs"][0]["template"]["spec"]["containers"][0]["resources"] = {
             "requests": {
-                "cpu": self.workerCpu,
+                "cpu": f"{self.workerCpu}048m",
                 "memory": f"{self.workerMemory}Gi"
             },
             "limits": {
-                "cpu": self.workerCpu,
+                "cpu": f"{self.workerCpu}048m",
                 "memory": f"{self.workerMemory}Gi"
             }
         }
@@ -154,7 +155,6 @@ class RaytuneKindBenchmark(Benchmark):
             " svc/raycluster-study-head-svc 6379:6379 8265:8265 10001:10001"
         )
 
-        # May not work if port forwarding is blocking (likely)
         print("Port-forwarding successful. Deployment complete.")
 
     def wait_for_head(self, kubernetes_watch_stream: Generator) -> str:
@@ -205,24 +205,21 @@ class RaytuneKindBenchmark(Benchmark):
         """
         search_space = {
             "epochs": self.epochs,
-            # Reduced from 100 steps to 10 each during testing. Later, make configurable
             # From simple raytune example
             "hyperparameters": {
-                "learning_rate": tune.choice(numpy.linspace(0.0001, 0.01, 10)),
-                "weight_decay": tune.choice(numpy.linspace(0.00001, 0.001, 10)),
+                # Originally 10 steps, not 3/2
+                "learning_rate": tune.grid_search(numpy.linspace(0.0001, 0.01, 10)),
+                "weight_decay": tune.grid_search(numpy.linspace(0.00001, 0.001, 10)),
                 "hidden_layer_config": tune.grid_search([[20], [10, 10]]),
             }
         }
 
         tuner = tune.Tuner(
             tune.with_resources(ray_objective, {
-                # TODO: Other resources too, like memory? Not necessary bc of ray_resources.yaml but more consistent
+                # Automatically provisions exactly one worker per trial
                 "cpu": self.workerCpu
             }),
-            param_space=search_space,
-            tune_config=TuneConfig(
-                num_samples=self.trials, # TODO: Why 20 instead of 10?
-            )
+            param_space=search_space
         )
         self.results = tuner.fit()
 
@@ -305,7 +302,7 @@ if __name__ == "__main__":
     resources = YMLHandler.load_yaml(os.path.join(dir_path, "resource_definition.yml"))
     to_automate = {
         "metricsIP": urlopen("https://checkip.amazonaws.com").read().decode("utf-8").strip(),
-        # "prometheus_url": "http://localhost:30041"
+        "prometheus_url": "http://localhost:30041"
     }
     resources.update(to_automate)
 

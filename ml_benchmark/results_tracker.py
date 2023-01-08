@@ -18,7 +18,7 @@ class ResultTracker(Tracker):
         r.classification_metrics = result
 
         try:
-            self.store.store(r,table_name="classification_metrics")
+            self.store.store(r, table_name="classification_metrics")
             logging.info("Stored result")
         except Exception as e:
             logging.error(f"failed to store result {e}")

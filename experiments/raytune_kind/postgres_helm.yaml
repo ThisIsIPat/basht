@@ -1,0 +1,24 @@
+# Helm Postgres chart with node affinity for knode1 into namespace st-hpo:
+
+# Legacy auth
+#postgresqlUsername: root
+#postgresqlPassword: "1234"
+#postgresqlDatabase: benchmark_metrics
+auth:
+  username: root
+  password: "1234"
+  database: benchmark_metrics
+
+persistence:
+  enabled: false
+
+nodeSelector:
+  kubernetes.io/hostname: knode1
+
+master:
+  nodeSelector:
+    kubernetes.io/hostname: knode1
+
+slave:
+  nodeSelector:
+    kubernetes.io/hostname: knode1

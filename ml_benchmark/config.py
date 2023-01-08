@@ -38,5 +38,5 @@ class MetricsStorageConfig:
     user = "root"
     password = "1234"
     db = "benchmark_metrics"
-    host = "host.docker.internal"  # Windows + Docker Desktop: host.docker.internal, Linux / Other: localhost
+    host = "localhost"  # Internal Cluster Pod IP for temporary postgres deployment.
     connection_string = f"postgresql://{user}:{password}@{host}:{port}/{db}"

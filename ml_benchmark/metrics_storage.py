@@ -3,7 +3,8 @@ import logging
 import time
 import docker
 from docker.errors import APIError
-from sqlalchemy import create_engine, MetaData, Table, Column, String, Float, select, Integer, insert, BigInteger
+from sqlalchemy import create_engine, MetaData, Table, Column, String, Float, select, Integer, insert, BigInteger, \
+    delete
 import psycopg2
 import os 
 
@@ -50,32 +51,38 @@ class MetricsStorage:
         return self
 
     def setup_db(self):
-        self.client = docker.from_env()
-        try:
-            self.client.containers.run(
-                "postgres:14.1", detach=True,
-                environment=[
-                    f"POSTGRES_PASSWORD={self.password}", f"POSTGRES_DB={self.db}", f"POSTGRES_USER={self.user}"],
-                ports={f'{self.port}/tcp': self.port},
-                name="postgres",
-                remove=True)
-        except APIError as e:
-            if e.status_code == 409:
-                #TODO: we maybe want to drop the database in these cases
-                logging.info("Postgres is already running")
-            else:
-                raise e
+        # self.client = docker.from_env()
+        # try:
+        #     self.client.containers.run(
+        #         "postgres:14.1", detach=True,
+        #         environment=[
+        #             f"POSTGRES_PASSWORD={self.password}", f"POSTGRES_DB={self.db}", f"POSTGRES_USER={self.user}"],
+        #         ports={f'{self.port}/tcp': self.port},
+        #         name="postgres",
+        #         remove=True)
+        # except APIError as e:
+        #     if e.status_code == 409:
+        #         #TODO: we maybe want to drop the database in these cases
+        #         logging.info("Postgres is already running")
+        #     else:
+        #         raise e
+        #
+        # container = self.client.containers.get("postgres")
+        # # checks if db is up
+        # while "accepting connections" not in container.exec_run("pg_isready").output.decode():
+        #     time.sleep(2)
+        #     #TODO: should have a timeout condition
 
-        container = self.client.containers.get("postgres")
-        # checks if db is up
-        while "accepting connections" not in container.exec_run("pg_isready").output.decode():
-            time.sleep(2)
-            #TODO: should have a timeout condition
         print("DB-Container Running")
 
     def stop_db(self):
-        container = self.client.containers.get("postgres")
-        container.stop()
+        # container = self.client.containers.get("postgres")
+        # container.stop()
+        with self.engine.connect() as conn:
+            conn.execute(delete(self.latency))
+            conn.execute(delete(self.resources))
+            conn.execute(delete(self.classification_metrics))
+        pass
 
     def create_metrics_table(self):
         """
@@ -194,7 +201,7 @@ class MetricsStorageStrategy(StoreStrategy):
         # XXX: list order is implicitly a priority
         connection_string_actions_registry = [
             ("env", os.environ.get("METRICS_STORAGE_HOST", None)),
-            ("args",kwargs.get("connection_string",None))
+            ("args",kwargs.get("connection_string", None))
         ]
         for method, value in connection_string_actions_registry:
             if value:
