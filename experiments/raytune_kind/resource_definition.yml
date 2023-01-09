@@ -19,5 +19,5 @@ hyperparameter:
     start: [10]
     end: [100, 100, 100]
     step_size: [10, 1]
-trials: 10
+trials: 200
 epochs: 50

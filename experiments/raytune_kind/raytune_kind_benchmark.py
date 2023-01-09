@@ -207,7 +207,6 @@ class RaytuneKindBenchmark(Benchmark):
             "epochs": self.epochs,
             # From simple raytune example
             "hyperparameters": {
-                # Originally 10 steps, not 3/2
                 "learning_rate": tune.grid_search(numpy.linspace(0.0001, 0.01, 10)),
                 "weight_decay": tune.grid_search(numpy.linspace(0.00001, 0.001, 10)),
                 "hidden_layer_config": tune.grid_search([[20], [10, 10]]),
